@@ -12,9 +12,9 @@ sequelize.authenticate().then(()=>{
 });
 
 
-
 app.use(express.urlencoded());
 app.use(express.json());
+app.use(express.static("uploads"));
 
 
 
@@ -24,6 +24,8 @@ app.use("/api/v1", require("./routes/auth"));
 app.use(verifyJWT);
 
 // ROUTES
+
+
 app.use("/api/v1/", require("./routes/categories"));
 app.use("/api/v1/" , require("./routes/products"));
 app.use("/api/v1/profile/", require("./routes/profiles"));

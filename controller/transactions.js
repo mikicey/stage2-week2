@@ -2,6 +2,7 @@ const Transaction = require("../models/transaction");
 const Product = require("../models/product");
 const sequelize = require("../config/connect")
 const { QueryTypes } = require('sequelize');
+const {sendErr} = require("../helper/other");
 
 const getTransactions = async(req,res) => {
 
@@ -63,6 +64,11 @@ const postTransaction = async(req,res) => {
     const userID = req.user.id;
     const {idProduct,qty,total} = req.body;
 
+    
+    if(qty < 0 || total < 0){
+        return sendErr("Total Price and quantity cant be negative",res)
+    }
+
 try{
   const transaction = await Transaction.create({
       buyer_id : userID,
@@ -94,7 +100,7 @@ try{
 
         return res.status(400).send({
             status:"fail",
-            message : err
+            message : "Make sure datatype correct and product id exists in product table"
         })
 
     }

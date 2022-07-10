@@ -1,5 +1,7 @@
 const Product = require("../models/product");
 const sequelize = require("../config/connect");
+const {minimumChecker} = require("../helper/auth");
+const {sendErr} = require("../helper/other");
 
 const getProducts = async(req,res) => {
 
@@ -57,15 +59,39 @@ const getProduct = async(req,res) => {
     } catch(err) {
         return res.status(400).send({
             status:"Fail",
-            message: err
+            message: "Row not Found"
         })
     }
 
 };
 
 const postProduct = async(req,res) => {
+
     const userID = req.user.id;
-    const{image,title,desc,price,qty,category_id} = req.body;
+    const file = req.file.filename;
+    const{title,desc,price,qty,category_id} = req.body;
+
+   
+    const image = "localhost:3000/" + file
+
+    
+    // Check format
+    if(!minimumChecker(title,8)){
+        return sendErr("Title minimum 8 characters",res)
+    };
+
+    if(!minimumChecker(desc,8)){
+        return sendErr("Desc minimum 8 characters",res)
+    };
+
+    if(qty < 0 || price < 0){
+        return sendErr("Price and quantity cannot be negative",res)
+    };
+
+
+   
+
+    
 
     try{
         const product = await Product.create({product_name:title, 
@@ -102,7 +128,7 @@ const postProduct = async(req,res) => {
     } catch(err) {
         return res.status(400).send({
             status:"Fail",
-            message: err
+            message: "Make sure all formats are correct and cat_id value is located at category table."
         })
     }
 };
@@ -110,8 +136,23 @@ const postProduct = async(req,res) => {
 const editProduct = async(req,res) => {
     const userID = req.user.id;
     const productID = req.params.id;
+    const file = req.file.filename;
+    const image = "localhost:3000/" + file
 
-    const{image,title,desc,price,qty,category_id} = req.body;
+    const{title,desc,price,qty,category_id} = req.body;
+
+    // Check format
+    if(!minimumChecker(title,8)){
+        return sendErr("Title minimum 8 characters",res)
+    };
+
+    if(!minimumChecker(desc,8)){
+        return sendErr("Desc minimum 8 characters",res)
+    };
+
+    if(qty < 0 || price < 0){
+        return sendErr("Price and quantity cannot must be negative",res)
+    };
 
 
     try{
@@ -133,7 +174,7 @@ const editProduct = async(req,res) => {
 
 
 
-        return res.status(400).send({
+        return res.status(201).send({
             status: "Success",
             data : {
                 product : {
@@ -150,7 +191,7 @@ const editProduct = async(req,res) => {
     } catch(err) {
         return res.status(400).send({
             status:"Fail",
-            message: err
+            message: "Make sure all formats are correct and cat_id value is located at category table."
         })
     }
 };
@@ -178,7 +219,7 @@ const deleteProduct = async(req,res) => {
     } catch(err) {
         return res.status(400).send({
             status:"Fail",
-            message: err
+            message: "Row not found"
         })
     }
 };

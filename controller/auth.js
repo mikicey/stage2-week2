@@ -1,9 +1,12 @@
-const Joi = require("joi");
+
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
 const { Op } = require("sequelize");
+
+const {emailChecker,minimumChecker} = require("../helper/auth");
+const {sendErr} = require("../helper/other")
 
 require("dotenv").config();
 
@@ -12,21 +15,19 @@ require("dotenv").config();
 const registerUser = async(req,res) => {
 
 
-        const schema = Joi.object({
-            name: Joi.string().min(6).required(),
-            email: Joi.string().email().min(5).required(),
-            password: Joi.string().min(8).required()
-        });
+    // Checking format
+    if(!emailChecker(req.body.email) || !minimumChecker(req.body.email,8)){
+        return sendErr("Email format invalid",res)
+    };
 
-        // Check format
-        const{err} = schema.validate(req.body);
-        if(err){
-            return res.status(400).send({
-                error: {
-                    message: error.details[0].message
-                }
-            })
-        }
+    if(!minimumChecker(req.body.name,8)){
+        return sendErr("Username minimum 8 characters",res)
+    };
+
+    if(!minimumChecker(req.body.password,8)){
+        return sendErr("Password minimum 8 characters",res)
+    };
+
 
     try {
         // Check any duplicate emails and username
@@ -71,7 +72,7 @@ const registerUser = async(req,res) => {
             expiresIn:"1d"
         })
 
-        res.status(201).send({
+        return res.status(201).send({
              status:"success",
              data : {
                 user : {
@@ -138,7 +139,7 @@ const loginUser = async(req,res) => {
      })
 
     // response
-    res.status(201).send({
+    return res.status(201).send({
         status:"success",
         data : {
             user : {

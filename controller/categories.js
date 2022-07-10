@@ -1,4 +1,6 @@
 const Category = require("../models/category");
+const {minimumChecker} = require("../helper/auth");
+const {sendErr} = require("../helper/other");
 
 const getCategories = async(req,res) => {
 
@@ -63,6 +65,10 @@ const getCategory = async(req,res) => {
 const postCategory = async(req,res) => {
     const {name} = req.body;
 
+    if(!minimumChecker(name,8)){
+        return sendErr("Name minimum 8 characters",res)
+    };
+
     // Check length
     if(name.length === 0){
         return res.status(400).send({
@@ -90,7 +96,7 @@ const postCategory = async(req,res) => {
 
             return res.status(400).send({
                 status:"Fail",
-                message: err
+                message: err.errors[0].message
         })
 
       };
@@ -107,6 +113,10 @@ const editCategory = async(req,res) => {
             status:"Error",
             message: "Name cannot be empty"
         })
+    };
+
+    if(!minimumChecker(name,8)){
+        return sendErr("Name minimum 8 characters",res)
     };
 
 
@@ -133,7 +143,7 @@ const editCategory = async(req,res) => {
 
     return res.status(400).send({
         status:"Fail",
-        message: err
+        message: err.errors[0].message
     })
 
 
